@@ -1,6 +1,6 @@
-from ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
-from RelationManager import RelationManager
-from JoinedEntityModel import JoinedEntityModel
+from .ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
+from .RelationManager import RelationManager
+from .JoinedEntityModel import JoinedEntityModel
 
 # This file defines constructs that allow the logical joining of SQL tables.
 # These joins produce a tree structure of JoinedRelationManager's terminating in RelationManager leaf nodes.

@@ -1,8 +1,8 @@
 import sqlite3
 import traceback
 
-from VoidLog import VoidLog
-from RelationManager import RelationManager
+from .VoidLog import VoidLog
+from .RelationManager import RelationManager
 
 # TODO: Rename recurse-only parameters with a preceeding underscore.
 
@@ -18,7 +18,7 @@ class EntityManager:
 		if type(table_name) is not str:
 			raise TypeError(f"table_name must be string, not {type(table_name)}.")
 		
-		from EntityModel import EntityModel
+		from .EntityModel import EntityModel
 		if type(entity_model) is not type or not issubclass(entity_model, EntityModel):
 			raise TypeError(f"entity_model must be a class which inherits EntityModel, not {entity_model}.")
 		

@@ -1,11 +1,11 @@
-from ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
-from EntityModel import EntityModel
+from .ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
+from .EntityModel import EntityModel
 
 # The EntityModel for objects stored on JOIN'd relations, corresponding to individual rows in the result of a JOIN.
 # Automatically constructed as the return types of queries on JoinedRelationManaager
 class JoinedEntityModel(EntityModel):
 	def __init__(self, joined_relation):
-		from JoinedRelationManager import JoinedRelationManager
+		from .JoinedRelationManager import JoinedRelationManager
 		if type(joined_relation) is not JoinedRelationManager:
 			raise TypeError(f"joined_relation must be JoinedRelationManager, not {joined_relation}.")
 		

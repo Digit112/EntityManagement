@@ -1,7 +1,7 @@
 from datetime import datetime
 import sqlite3
 
-from VoidLog import VoidLog
+from .VoidLog import VoidLog
 
 class ColumnInfo:
 	def __init__(self, table_name, name, type, nullable, default_val, pk):

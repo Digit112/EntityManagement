@@ -1,8 +1,8 @@
 from datetime import datetime, UTC
 from enum import Enum
 
-from ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
-from EntityModel import EntityModel
+from .ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
+from .EntityModel import EntityModel
 
 # Exposes CRUD operations on a single table in the database.
 # Automatically manages the created_on, updated_on, and id columns if they exist.
@@ -175,7 +175,7 @@ class RelationManager:
 	
 	# Returns a new JoinedRelationManager for querying with joins.
 	def join(self, right_relation, left_key, right_key, join_type=JoinType.INNER, left_alias=None, right_alias=None):
-		from JoinedRelationManager import JoinedRelationManager
+		from .JoinedRelationManager import JoinedRelationManager
 		
 		right_relation = self.entity_mgr.with_table(right_relation)
 		return JoinedRelationManager(self, right_relation, left_key, right_key, join_type, left_alias, right_alias)

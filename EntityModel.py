@@ -1,4 +1,4 @@
-from ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
+from .ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
 
 # Base class for objects stored by the database, corresponding to individual rows in tables.
 # Deriving classes will be returned by queries on their associated table which return data.

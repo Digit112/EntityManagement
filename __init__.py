@@ -1,11 +1,11 @@
-from DatabaseManager import *
+from .DatabaseManager import *
 
-from ColumnIdentifier import ColumnIdentifier
+from .ColumnIdentifier import ColumnIdentifier
 
-from RelationManager import *
-from EntityModel import *
+from .RelationManager import *
+from .EntityModel import *
 
-from EntityManager import *
+from .EntityManager import *
 
-from JoinedRelationManager import *
-from JoinedEntityModel import *
+from .JoinedRelationManager import *
+from .JoinedEntityModel import *
