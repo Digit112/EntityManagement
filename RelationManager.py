@@ -1,5 +1,6 @@
 from datetime import datetime, UTC
 from enum import Enum
+import sqlite3
 
 from .ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
 from .EntityModel import EntityModel

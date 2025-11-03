@@ -1,4 +1,4 @@
-import sqlite3
+
 import traceback
 
 from .VoidLog import VoidLog
@@ -19,8 +19,10 @@ class EntityManager:
 			raise TypeError(f"table_name must be string, not {type(table_name)}.")
 		
 		from .EntityModel import EntityModel
-		if type(entity_model) is not type or not issubclass(entity_model, EntityModel):
-			raise TypeError(f"entity_model must be a class which inherits EntityModel, not {entity_model}.")
+		if type(entity_model) is not type:
+			raise TypeError(f"entity_model must be a type, not {type(entity_model)}.")
+		# if not issubclass(entity_model, EntityModel):
+			# raise TypeError(f"entity_model must be a class which inherits EntityModel, not {entity_model}.")
 		
 		self.tables[table_name] = RelationManager(self, self.entity_log, table_name, entity_model)
 	
