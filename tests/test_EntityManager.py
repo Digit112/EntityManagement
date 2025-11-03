@@ -50,6 +50,7 @@ def test_create_read_2(dummy_structured_entity_mgr):
 	
 	assert read_user.username == "ekobadd"
 	assert read_user.password == "password123"
+	
 
 def test_read_by_column(dummy_structured_entity_mgr):
 	entity_mgr = dummy_structured_entity_mgr
@@ -81,6 +82,22 @@ def test_update(dummy_structured_entity_mgr):
 	
 	assert new_read_user.username == "not ekobadd"
 	assert new_read_user.password == "not password123"
+
+def test_entity_context_manager(dummy_structured_entity_mgr):
+	entity_mgr = dummy_structured_entity_mgr
+	
+	# Test create
+	with entity_mgr.with_table("users").new_blank_entity() as new_user:
+		new_user.username = "created_with_context_manager"
+		new_user.password = "password123"
+	
+	# Test update
+	with entity_mgr.with_table("users").read_one_by_column("username", "created_with_context_manager") as read_user:
+		assert read_user.password == "password123"
+		read_user.password = "password456"
+	
+	read_user = entity_mgr.with_table("users").read_one_by_column("username", "created_with_context_manager")
+	assert read_user.password == "password456"
 
 def test_create_delete(dummy_structured_entity_mgr):
 	entity_mgr = dummy_structured_entity_mgr

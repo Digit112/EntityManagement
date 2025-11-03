@@ -2,7 +2,8 @@ import os
 import pytest
 
 from DatabaseManager import DatabaseManager
-from EntityManager import EntityManager, EntityModel
+from EntityManager import EntityManager
+from EntityModel import EntityModel
 
 class fake_logger:
 	def __init__(self, name):
