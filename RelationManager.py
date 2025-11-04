@@ -174,6 +174,11 @@ class RelationManager:
 		
 		return entity
 	
+	# Creates and binds a blank entity.
+	def new_bound_entity(self):
+		entity = self.new_blank_entity()
+		return self.create(entity)
+	
 	# Returns a new JoinedRelationManager for querying with joins.
 	def join(self, right_relation, left_key, right_key, join_type=JoinType.INNER, left_alias=None, right_alias=None):
 		from .JoinedRelationManager import JoinedRelationManager

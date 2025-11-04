@@ -169,9 +169,7 @@ class JoinedRelationManager(RelationManager):
 	# Returns a blank instance of the entity that this manages
 	# Such an entity is inherently suitable for CRUD operations.
 	def new_blank_entity(self):
-		entity = self.entity_model(self)
-		# for column_name in self.get_column_names():
-			# if not hasattr(entity, column_name):
-				# setattr(entity, column_name, None) TODO
-		
-		return entity
+		raise NotImplementedError()
+	
+	def new_bound_entity(self):
+		raise NotImplementedError()
