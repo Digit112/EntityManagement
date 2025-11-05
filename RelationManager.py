@@ -231,7 +231,7 @@ class RelationManager:
 		conn = self.entity_mgr.db_mgr.get_connection()
 		crsr = conn.cursor()
 		query_str = f"SELECT {columns_to_select} FROM {self.get_validated_relation_expression()} WHERE id = ?"
-		self.get_relation_mgr().entity_log.debug(f"Executing '{query_str}' [{id}]")
+		self.entity_log.debug(f"Executing '{query_str}' [{id}]")
 		crsr.execute(query_str, (id,))
 			
 		entity_data = crsr.fetchone()
@@ -255,12 +255,12 @@ class RelationManager:
 		conn = self.entity_mgr.db_mgr.get_connection()
 		crsr = conn.cursor()
 		query_str = f"SELECT {columns_to_select} FROM {self.get_validated_relation_expression()} WHERE {repr(column)} = ?"
-		self.get_relation_mgr().entity_log.debug(f"Executing '{query_str}', {(matching_value,)}")
+		self.entity_log.debug(f"Executing '{query_str}', {(matching_value,)}")
 		crsr.execute(query_str, (matching_value,))
 		
 		res = []
 		for entity_data in crsr:
-			self.get_relation_mgr().entity_log.debug(str(dict(entity_data)))
+			self.entity_log.debug(str(dict(entity_data)))
 			entity = self.new_blank_entity()
 			for column in self.get_column_identifiers():
 				entity.set_value(column, entity_data[repr(column)])
@@ -296,7 +296,7 @@ class RelationManager:
 			values.append(entity.id)
 			
 			query_str = f"UPDATE {self.get_validated_relation_expression()} SET {",".join(map(lambda v : v + "=?", columns_to_update))} WHERE id = ?"
-			self.get_relation_mgr().entity_log.debug(f"Executing '{query_str}', {values}")
+			self.entity_log.debug(f"Executing '{query_str}', {values}")
 			crsr.execute(query_str, values)
 			
 		# TODO: Reference to sqlite3 errors couples us to this database. Offload this to the db manager class.
