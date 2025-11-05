@@ -115,7 +115,7 @@ class EntityModel:
 	# That alias was passed to the JoinedRelationManager's constructor. This mechanism allows different aliases to the self table during self-joins.
 	def value_accessor(self, column, self_alias, am_setting, new_value, depth):
 		#print("value_accessor", column, self_alias, am_setting, new_value, depth)
-		print("  "*depth + f"[{self_alias if self_alias is not None else self.get_relation_mgr().get_table_name()}] {column}{f" := {new_value}"}")
+		self.get_relation_mgr().entity_log.debug("  "*depth + f"[{self_alias if self_alias is not None else self.get_relation_mgr().get_table_name()}] {column}{f" := {new_value}"}")
 		
 		table_name_matches_self_alias = column.qualifier is not None and self_alias is not None and column.qualifier.lower() == self_alias.lower()
 		table_name_matches_self_name = column.qualifier is not None and column.qualifier.lower() == self.get_relation_mgr().get_validated_relation_expression().lower()

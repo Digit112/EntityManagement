@@ -69,7 +69,7 @@ class JoinedEntityModel(EntityModel):
 	# Note that self_alias is not used. It must be included to match the signature of RelationManager.get_value_or_none()
 	def value_accessor(self, column, self_alias, am_setting, new_value, depth):
 		#print("joined value_accessor", column, self_alias, am_setting, new_value, depth)
-		print("  "*depth + f"{column}{f" := {new_value}"}")
+		self.get_relation_mgr().entity_log.debug("  "*depth + f"{column}{f" := {new_value}"}")
 		
 		if depth >= 128:
 			raise RuntimeError("JOIN depth limit exceeded.")
@@ -91,7 +91,7 @@ class JoinedEntityModel(EntityModel):
 		except (ColumnRetrievalError):
 			right_result_exists = False
 		
-		print(f"Got {left_result} ({"exists" if left_result_exists else "not exists"}) else {right_result} ({"exists" if right_result_exists else "not exists"})")
+		self.get_relation_mgr().entity_log.debug(f"Got {left_result} ({"exists" if left_result_exists else "not exists"}) else {right_result} ({"exists" if right_result_exists else "not exists"})")
 		
 		# Check for multiple results (ambiguity)
 		if left_result_exists and right_result_exists:
@@ -104,7 +104,7 @@ class JoinedEntityModel(EntityModel):
 			return left_result
 		
 		else:
-			print(self.left_entity.__dict__)
+			self.get_relation_mgr().entity_log.debug(self.left_entity.__dict__)
 			raise ColumnRetrievalError(f"Column name '{column}' does not exist.")
 	
 	# Gets leaf node - aka EntityModel - on the table
@@ -117,7 +117,7 @@ class JoinedEntityModel(EntityModel):
 		
 		left_result = self.left_entity.get_child_entity_model_or_none(table_name_or_alias, self.get_left_alias(), depth+1)
 		right_result = self.right_entity.get_child_entity_model_or_none(table_name_or_alias, self.get_right_alias(), depth+1)
-		print(f"Got {left_result} / {right_result}")
+		self.get_relation_mgr().entity_log.debug(f"Got {left_result} / {right_result}")
 		
 		# Check for multiple results (ambiguity)
 		if left_result is not None and right_result is not None:
