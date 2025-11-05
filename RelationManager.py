@@ -2,7 +2,7 @@ from datetime import datetime, UTC
 from enum import Enum
 import sqlite3
 
-from .ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
+from .ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError, ReadResultError
 from .EntityModel import EntityModel
 
 # Exposes CRUD operations on a single table in the database.
@@ -248,12 +248,10 @@ class RelationManager:
 			return None
 		
 		else:
-			print(dict(entity_data))
 			entity = self.new_blank_entity()
 			for column in self.get_column_identifiers():
 				entity.set_value(column, entity_data[repr(column)])
-			
-			print("Returning '" + str(entity) + "'")
+				
 			return entity
 	
 	def read_by_column(self, column_name, matching_value):
@@ -328,12 +326,11 @@ class RelationManager:
 	
 	def delete(self, id):
 		if id is None or type(id) != int:
-			raise ValueError("Invalid id '" + str(id) + "' of type '" + str(type(id)) + "'")
+			raise TypeError(f"Invalid id '{str(id)}' of type '{type(id)}'")
 		
 		conn = self.entity_mgr.db_mgr.get_connection()
 		crsr = conn.cursor()
 		query_str = f"DELETE FROM {self.get_validated_relation_expression()} WHERE id = ?"
-		print(f"Executing '{query_str}', [{id}]")
 		crsr.execute(query_str, (id,))
 		
 		conn.commit()
