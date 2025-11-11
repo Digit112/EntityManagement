@@ -1,6 +1,6 @@
 import pytest
 
-from EntityManagement.ColumnIdentifier import ReadResultError
+from ..ColumnIdentifier import ReadResultError
 
 def test_identifier_validation(db_mgr):
 	db_mgr.validate_sql_identifiers("_1aAzZ_0")
