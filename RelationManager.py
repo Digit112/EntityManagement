@@ -1,8 +1,9 @@
 from datetime import datetime, UTC
 from enum import Enum
+import sqlite3
 
 from EntityManagement.ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError, ReadResultError
-from EntityModel import EntityModel
+from EntityManagement.EntityModel import EntityModel
 
 # Exposes CRUD operations on a single table in the database.
 # Automatically manages the created_on, updated_on, and id columns if they exist.
@@ -120,7 +121,7 @@ class RelationManager:
 	# When called from such a parent, the column_name will have already been split into a table identifier / column identifier pair.
 	# This is the case when depth is positive.
 	def get_validated_column_identifier(self, column, self_alias=None, depth=0):
-		print("get_validated_column_identifier", column, self_alias, depth)
+		self.entity_log.debug(f"get_validated_column_identifier {column} {self_alias} {depth}")
 		
 		# Check SQL values for invalid characters.
 		if depth == 0:
@@ -137,26 +138,19 @@ class RelationManager:
 		
 		managed_table_name = self.get_table_name()
 		
+		# Check qualifier matches the table name or alias if that exists.
 		qualifier_is_valid = True
 		if column.qualifier is not None:
 			if self_alias is not None:
 				qualifier_is_valid = column.qualifier.lower() == managed_table_name.lower() or column.qualifier.lower() == self_alias.lower()
-				print(f"  {qualifier_is_valid} := {column.qualifier.lower()} == {managed_table_name.lower()} or {column.qualifier.lower()} == {self_alias.lower()}")
 			else:
 				qualifier_is_valid = column.qualifier.lower() == managed_table_name.lower()
-				print(f"  {qualifier_is_valid} := {column.qualifier.lower()} == {managed_table_name.lower()}")
-		
-		else:
-			print("  No qualifier.")
 		
 		name_is_valid = column.name in self.get_column_names()
-		
-		print("  ", column.qualifier, managed_table_name, self_alias, column.name, self.get_column_names())
 		
 		# Validate table name and that column exists.
 		if qualifier_is_valid and name_is_valid:
 			column.qualifier = self_alias if self_alias else managed_table_name
-			print(f"  returning {column}")
 			return column
 		else:
 			raise ColumnRetrievalError(f"Column name '{column}' does not exist.")
@@ -173,9 +167,14 @@ class RelationManager:
 		
 		return entity
 	
+	# Creates and binds a blank entity.
+	def new_bound_entity(self):
+		entity = self.new_blank_entity()
+		return self.create(entity)
+	
 	# Returns a new JoinedRelationManager for querying with joins.
 	def join(self, right_relation, left_key, right_key, join_type=JoinType.INNER, left_alias=None, right_alias=None):
-		from JoinedRelationManager import JoinedRelationManager
+		from .JoinedRelationManager import JoinedRelationManager
 		
 		right_relation = self.entity_mgr.with_table(right_relation)
 		return JoinedRelationManager(self, right_relation, left_key, right_key, join_type, left_alias, right_alias)
@@ -199,7 +198,7 @@ class RelationManager:
 			values = self.get_values_of_columns(entity, columns_to_create)
 			
 			query_str = f"INSERT INTO {self.get_validated_relation_expression()} ({",".join(columns_to_create)}) VALUES ({",".join("?"*len(values))})"
-			print(f"Executing '{query_str}', {values}")
+			self.entity_log.debug(f"Executing '{query_str}', {values}")
 			crsr.execute(query_str, values)
 			crsr.execute("SELECT last_insert_rowid()")
 			
@@ -216,7 +215,7 @@ class RelationManager:
 			entity.id = crsr.fetchone()[0] # Bind.
 			entity.relation_mgr = self
 			
-			print("Got ID " + str(entity.id) + ", Returning")
+			self.entity_log.debug(f"Got ID {str(entity.id)}, Returning")
 			return entity
 		
 		finally:
@@ -232,7 +231,7 @@ class RelationManager:
 		conn = self.entity_mgr.db_mgr.get_connection()
 		crsr = conn.cursor()
 		query_str = f"SELECT {columns_to_select} FROM {self.get_validated_relation_expression()} WHERE id = ?"
-		print(f"Executing '{query_str}' [{id}]")
+		self.entity_log.debug(f"Executing '{query_str}' [{id}]")
 		crsr.execute(query_str, (id,))
 			
 		entity_data = crsr.fetchone()
@@ -242,30 +241,27 @@ class RelationManager:
 			return None
 		
 		else:
-			print(dict(entity_data))
 			entity = self.new_blank_entity()
 			for column in self.get_column_identifiers():
 				entity.set_value(column, entity_data[repr(column)])
-			
-			print("Returning '" + str(entity) + "'")
+				
 			return entity
 	
 	# Returns a list of entities containing the passed matching value in the identified column.
 	def read_by_column(self, column_name, matching_value):
 		column = self.get_validated_column_identifier(ColumnIdentifier(column_name)) # TODO get alias here!!!!
-		print(column)
 		
 		columns_to_select = ",".join(map(lambda col : f"{repr(col)} AS [{repr(col)}]", self.get_column_identifiers()))
 		
 		conn = self.entity_mgr.db_mgr.get_connection()
 		crsr = conn.cursor()
 		query_str = f"SELECT {columns_to_select} FROM {self.get_validated_relation_expression()} WHERE {repr(column)} = ?"
-		print(f"Executing '{query_str}', {(matching_value,)}")
+		self.entity_log.debug(f"Executing '{query_str}', {(matching_value,)}")
 		crsr.execute(query_str, (matching_value,))
 		
 		res = []
 		for entity_data in crsr:
-			print(dict(entity_data))
+			self.entity_log.debug(str(dict(entity_data)))
 			entity = self.new_blank_entity()
 			for column in self.get_column_identifiers():
 				entity.set_value(column, entity_data[repr(column)])
@@ -317,7 +313,7 @@ class RelationManager:
 			values.append(entity.id)
 			
 			query_str = f"UPDATE {self.get_validated_relation_expression()} SET {",".join(map(lambda v : v + "=?", columns_to_update))} WHERE id = ?"
-			print(f"Executing '{query_str}', {values}")
+			self.entity_log.debug(f"Executing '{query_str}', {values}")
 			crsr.execute(query_str, values)
 			
 		# TODO: Reference to sqlite3 errors couples us to this database. Offload this to the db manager class.
@@ -339,12 +335,11 @@ class RelationManager:
 	
 	def delete(self, id):
 		if id is None or type(id) != int:
-			raise ValueError("Invalid id '" + str(id) + "' of type '" + str(type(id)) + "'")
+			raise TypeError(f"Invalid id '{str(id)}' of type '{type(id)}'")
 		
 		conn = self.entity_mgr.db_mgr.get_connection()
 		crsr = conn.cursor()
 		query_str = f"DELETE FROM {self.get_validated_relation_expression()} WHERE id = ?"
-		print(f"Executing '{query_str}', [{id}]")
 		crsr.execute(query_str, (id,))
 		
 		conn.commit()

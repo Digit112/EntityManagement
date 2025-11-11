@@ -138,6 +138,22 @@ def test_create_delete(dummy_structured_entity_mgr):
 	read_user = entity_mgr.with_table("users").read(new_user.id)
 	assert read_user is None
 
+def test_delete(dummy_structured_entity_mgr):
+	entity_mgr = dummy_structured_entity_mgr
+	
+	read_user = entity_mgr.with_table("users").read_one_by_column("username", "ekobadd")
+	
+	with pytest.raises(TypeError):
+		entity_mgr.with_table("users").delete("incorrect type")
+	
+	entity_mgr.with_table("users").delete(read_user.id)
+	
+	new_read_user = entity_mgr.with_table("users").read_by_column("username", "ekobadd")
+	assert new_read_user == []
+	
+	new_read_user = entity_mgr.with_table("users").read(read_user.id)
+	assert new_read_user is None
+
 def create_joined(dummy_structured_entity_mgr):
 	entity_mgr = dummy_structured_entity_mgr
 	

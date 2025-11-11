@@ -1,6 +1,6 @@
 from EntityManagement.ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
-from RelationManager import RelationManager
-from JoinedEntityModel import JoinedEntityModel
+from EntityManagement.RelationManager import RelationManager
+from EntityManagement.JoinedEntityModel import JoinedEntityModel
 
 # This file defines constructs that allow the logical joining of SQL tables.
 # These joins produce a tree structure of JoinedRelationManager's terminating in RelationManager leaf nodes.
@@ -15,8 +15,6 @@ class JoinedRelationManager(RelationManager):
 	# The alias parameters allow disambigution of column names passed as the keys on this JoinedRelationManager or any that includes this one as a component, directly or indirectly.
 	# These aliases appear in the generated SQL exactly as one would expect.
 	def __init__(self, left_relation, right_relation, left_key, right_key, join_type=RelationManager.JoinType.INNER, left_alias=None, right_alias=None):
-		print("JoinedRelationManager", left_relation, right_relation, left_key, right_key, join_type, left_alias, right_alias)
-	
 		if not isinstance(left_relation, RelationManager):
 			raise TypeError(f"left_relation must be a RelationManager, not {type(left_relation)}")
 		if not isinstance(right_relation, RelationManager):
@@ -37,6 +35,8 @@ class JoinedRelationManager(RelationManager):
 		
 		if left_relation.entity_mgr is not right_relation.entity_mgr:
 			raise ValueError("The constituent tables must be managed by the same EntityManager.")
+			
+		left_relation.entity_log.debug(f"JoinedRelationManager {left_relation} {right_relation} {left_key} {right_key} {join_type} {left_alias} {right_alias}")
 		
 		# TODO: Is it okay that the tables on the relations are not checked?
 		
@@ -123,7 +123,7 @@ class JoinedRelationManager(RelationManager):
 	# When called from such a parent, the column_name will have already been split into a table identifier / column identifier pair.
 	# This is the case when depth is positive.
 	def get_validated_column_identifier(self, column, self_alias=None, depth=0):
-		print("joined get_validated_column_identifier", column, self_alias, depth)
+		self.entity_log.debug(f"joined get_validated_column_identifier {column} {self_alias} {depth}")
 		
 		if self_alias is not None:
 			raise ValueError("Cannot alias a JoinedRelationManaager.")
@@ -140,8 +140,6 @@ class JoinedRelationManager(RelationManager):
 		# Retrieve column from children.
 		left_result, right_result = (None, None)
 		left_result_exists, right_result_exists = (True, True)
-		
-		print(f"aliases: {self.left_alias} / {self.right_alias}")
 		
 		try:
 			left_result = self.left_relation.get_validated_column_identifier(column, self.left_alias, depth+1)
@@ -170,8 +168,8 @@ class JoinedRelationManager(RelationManager):
 	# Such an entity is inherently suitable for CRUD operations.
 	def new_blank_entity(self):
 		entity = self.entity_model(self)
-		# for column_name in self.get_column_names():
-			# if not hasattr(entity, column_name):
-				# setattr(entity, column_name, None) TODO
 		
 		return entity
+	
+	def new_bound_entity(self):
+		raise NotImplementedError()
