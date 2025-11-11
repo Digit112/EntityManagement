@@ -2,8 +2,8 @@ from datetime import datetime, UTC
 from enum import Enum
 import sqlite3
 
-from EntityManagement.ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError, ReadResultError
-from EntityManagement.EntityModel import EntityModel
+from .ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError, ReadResultError
+from .EntityModel import EntityModel
 
 # Exposes CRUD operations on a single table in the database.
 # Automatically manages the created_on, updated_on, and id columns if they exist.
