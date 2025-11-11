@@ -1,7 +1,7 @@
 from datetime import datetime, UTC
 from enum import Enum
 
-from ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
+from EntityManagement.ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError, ReadResultError
 from EntityModel import EntityModel
 
 # Exposes CRUD operations on a single table in the database.
@@ -250,6 +250,7 @@ class RelationManager:
 			print("Returning '" + str(entity) + "'")
 			return entity
 	
+	# Returns a list of entities containing the passed matching value in the identified column.
 	def read_by_column(self, column_name, matching_value):
 		column = self.get_validated_column_identifier(ColumnIdentifier(column_name)) # TODO get alias here!!!!
 		print(column)
@@ -274,6 +275,22 @@ class RelationManager:
 		conn.close()
 		return res
 	
+	# Reads by column, returns the entity if it exists or None otherwise.
+	# Throws an error if multiple entities were found.
+	def read_one_or_none_by_column(self, column_name, matching_value):
+		res = self.read_by_column(column_name, matching_value)
+		
+		if len(res) > 1:
+			raise ReadResultError(f"Expected exactly one result from read operation. Got {len(res)}.")
+		
+		elif len(res) == 0:
+			return None
+			
+		else:
+			return res[0]
+	
+	# Reads by column, returns the entity.
+	# Throws an error if zero or multiple entities were found.
 	def read_one_by_column(self, column_name, matching_value):
 		res = self.read_by_column(column_name, matching_value)
 		

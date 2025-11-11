@@ -1,5 +1,7 @@
 import pytest
 
+from EntityManagement.ColumnIdentifier import ReadResultError
+
 def test_identifier_validation(db_mgr):
 	db_mgr.validate_sql_identifiers("_1aAzZ_0")
 	db_mgr.validate_sql_identifiers("mnop_5678")
@@ -62,10 +64,34 @@ def test_read_by_column(dummy_structured_entity_mgr):
 	entity_mgr.with_table("users").create(new_user)
 	print("Created ID: " + str(new_user.id))
 	
-	read_users = entity_mgr.with_table("users").read_one_by_column("username", "bipnboop")
+	read_users = entity_mgr.with_table("users").read_by_column("username", "bipnboop")
 	
-	assert read_users.username == "bipnboop"
-	assert read_users.password == "passalasso"
+	assert len(read_users) == 1
+	assert read_users[0].username == "bipnboop"
+	assert read_users[0].password == "passalasso"
+
+def test_multiple_read_by_column(dummy_structured_entity_mgr):
+	entity_mgr = dummy_structured_entity_mgr
+	
+	read_projects = entity_mgr.with_table("projects").read_by_column("title", "duped title")
+	
+	assert len(read_projects) == 2
+	assert read_projects[0].title == "duped title"
+	assert read_projects[1].title == "duped title"
+
+def test_read_one_by_column(dummy_structured_entity_mgr):
+	entity_mgr = dummy_structured_entity_mgr
+	
+	with pytest.raises(ReadResultError):
+		entity_mgr.with_table("projects").read_one_by_column("title", "nonexistent title")
+	
+	with pytest.raises(ReadResultError):
+		entity_mgr.with_table("projects").read_one_by_column("title", "duped title")
+	
+	with pytest.raises(ReadResultError):
+		dupe = entity_mgr.with_table("projects").read_one_or_none_by_column("title", "duped title")
+	
+	assert entity_mgr.with_table("projects").read_one_or_none_by_column("title", "nonexistent title") == None
 
 def test_update(dummy_structured_entity_mgr):
 	entity_mgr = dummy_structured_entity_mgr

@@ -1,4 +1,4 @@
-from ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
+from EntityManagement.ColumnIdentifier import ColumnIdentifier, ColumnRetrievalError
 from RelationManager import RelationManager
 from JoinedEntityModel import JoinedEntityModel
 

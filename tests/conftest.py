@@ -78,6 +78,16 @@ def dummy_structured_entity_mgr(config_mgr, db_mgr):
 	
 	crsr.execute(f"INSERT INTO project_members (user_id, project_id) VALUES ({member_id}, {project_id})")
 	
+	# Projects with same title.
+	crsr.execute("INSERT INTO users (username, password) VALUES ('dupe title owner', 'duplicitous69')")
+	duped_title_owner_id = crsr.lastrowid
+	
+	crsr.execute(f"INSERT INTO projects (title, owner_id) VALUES ('duped title', {duped_title_owner_id})")
+	project_id = crsr.lastrowid
+	
+	crsr.execute(f"INSERT INTO projects (title, owner_id) VALUES ('duped title', {duped_title_owner_id})")
+	project_id = crsr.lastrowid
+	
 	conn.commit()
 	conn.close()
 	
