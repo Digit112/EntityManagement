@@ -39,6 +39,18 @@ def db_mgr(tmpdir, config_mgr):
 	)
 
 @pytest.fixture()
+def dummy_structured_database_mgr(db_mgr):
+	conn = db_mgr.get_connection()
+	crsr = conn.cursor()
+	
+	crsr.execute("CREATE TABLE stuff (id INTEGER PRIMARY KEY AUTOINCREMENT, date_of TIMESTAMP, uuid_of UUID)")
+	
+	conn.commit()
+	conn.close()
+	
+	return db_mgr
+
+@pytest.fixture()
 def dummy_structured_entity_mgr(config_mgr, db_mgr):
 	class User(EntityModel):
 		pass

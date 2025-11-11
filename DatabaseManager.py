@@ -1,5 +1,6 @@
 from datetime import datetime
 import sqlite3
+from uuid import UUID
 
 from .VoidLog import VoidLog
 
@@ -37,6 +38,14 @@ class DatabaseManager:
 		
 		sqlite3.register_adapter(
 			datetime, lambda v: v.isoformat()
+		)
+		
+		sqlite3.register_converter(
+			"uuid", lambda v: UUID(bytes=v)
+		)
+		
+		sqlite3.register_adapter(
+			UUID, lambda v: v.bytes
 		)
 	
 	def run_script(self, sql_file):

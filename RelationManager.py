@@ -230,12 +230,17 @@ class RelationManager:
 		
 		conn = self.entity_mgr.db_mgr.get_connection()
 		crsr = conn.cursor()
-		query_str = f"SELECT {columns_to_select} FROM {self.get_validated_relation_expression()} WHERE id = ?"
-		self.entity_log.debug(f"Executing '{query_str}' [{id}]")
-		crsr.execute(query_str, (id,))
+		
+		entity_data = None
+		try:
+			query_str = f"SELECT {columns_to_select} FROM {self.get_validated_relation_expression()} WHERE id = ?"
+			self.entity_log.debug(f"Executing '{query_str}' [{id}]")
 			
-		entity_data = crsr.fetchone()
-		conn.close()
+			crsr.execute(query_str, (id,))
+			entity_data = crsr.fetchone()
+		
+		finally:
+			conn.close()
 		
 		if entity_data is None:
 			return None
@@ -255,20 +260,25 @@ class RelationManager:
 		
 		conn = self.entity_mgr.db_mgr.get_connection()
 		crsr = conn.cursor()
-		query_str = f"SELECT {columns_to_select} FROM {self.get_validated_relation_expression()} WHERE {repr(column)} = ?"
-		self.entity_log.debug(f"Executing '{query_str}', {(matching_value,)}")
-		crsr.execute(query_str, (matching_value,))
 		
 		res = []
-		for entity_data in crsr:
-			self.entity_log.debug(str(dict(entity_data)))
-			entity = self.new_blank_entity()
-			for column in self.get_column_identifiers():
-				entity.set_value(column, entity_data[repr(column)])
+		try:
+			query_str = f"SELECT {columns_to_select} FROM {self.get_validated_relation_expression()} WHERE {repr(column)} = ?"
+			self.entity_log.debug(f"Executing '{query_str}', {(matching_value,)}")
 			
-			res.append(entity)
+			crsr.execute(query_str, (matching_value,))
+			
+			for entity_data in crsr:
+				self.entity_log.debug(str(dict(entity_data)))
+				entity = self.new_blank_entity()
+				for column in self.get_column_identifiers():
+					entity.set_value(column, entity_data[repr(column)])
+				
+				res.append(entity)
 		
-		conn.close()
+		finally:
+			conn.close()
+		
 		return res
 	
 	# Reads by column, returns the entity if it exists or None otherwise.
