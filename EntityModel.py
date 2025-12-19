@@ -18,6 +18,9 @@ class EntityModel:
 		except (KeyError):
 			raise RuntimeError("relation_mgr was not initialized.")
 	
+	def is_bound(self):
+		return self.id is not None
+	
 	# Context management
 	def __enter__(self):
 		return self
@@ -26,10 +29,10 @@ class EntityModel:
 		if exc_value is not None:
 			raise exc_value
 		
-		if self.id is None:
-			self.get_relation_mgr().create(self)
-		else:
+		if self.is_bound():
 			self.get_relation_mgr().update(self)
+		else:
+			self.get_relation_mgr().create(self)
 	
 	# Convert to JSON-serializable dict.
 	# Allows specification of include_columns_as, a dict for mapping existing columns onto new names.

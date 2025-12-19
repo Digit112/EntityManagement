@@ -18,6 +18,18 @@ def test_identifier_validation(db_mgr):
 	with pytest.raises(ValueError) as excinfo:
 		db_mgr.validate_sql_identifiers("\"")
 
+def test_is_bouond(dummy_structured_entity_mgr):
+	entity_mgr = dummy_structured_entity_mgr
+	
+	new_user = entity_mgr.with_table("users").new_blank_entity()
+	assert not new_user.is_bound()
+	
+	new_user.username = "ekobadd"
+	new_user.password = "password123"
+	
+	entity_mgr.with_table("users").create(new_user)
+	assert new_user.is_bound()
+
 def test_create_read_1(dummy_structured_entity_mgr):
 	entity_mgr = dummy_structured_entity_mgr
 	
