@@ -72,7 +72,7 @@ class EntityModel:
 		if depth == 0: # Validate input.
 			self.get_relation_mgr().entity_mgr.db_mgr.validate_sql_identifiers([table_name_or_alias])
 		
-		if table_name_or_alias.lower() == self_alias.lower() or table_name_or_alias.lower() == self.get_relation_mgr().get_validated_relation_expression().lower():
+		if self_alias is not None and table_name_or_alias.lower() == self_alias.lower() or table_name_or_alias.lower() == self.get_relation_mgr().get_validated_relation_expression().lower():
 			return self
 		
 		else:
@@ -80,7 +80,7 @@ class EntityModel:
 	
 	# Gets a column's value.
 	# Throws ColumnRetrievalError if the requested column does not exist.
-	# Accetps a ColumnIdentifier or string. String can optionally include a qualifier.
+	# Accepts a ColumnIdentifier or string. String can optionally include a qualifier.
 	def get_value(self, column, self_alias=None):
 		if type(column) is str:
 			column = ColumnIdentifier(column)
@@ -102,6 +102,9 @@ class EntityModel:
 			return self.get_value(name)
 		except (ColumnRetrievalError):
 			pass
+		
+		if name is None or type(name) is not str:
+			raise RuntimeError(f"Invalid name or alias '{name}'.")
 		
 		val = self.get_child_entity_model_or_none(name)
 		if val is None:
